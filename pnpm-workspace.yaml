@@ -1,0 +1,7 @@
+packages:
+  - 'packages/*'
+  - 'spikes/*'
+allowBuilds:
+  lefthook: true
+minimumReleaseAgeExclude:
+  - eslint@10.13.0

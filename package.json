@@ -1,0 +1,35 @@
+{
+  "name": "shortcutkit-js",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@12.9.0",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "setup": "pnpm install --frozen-lockfile && pnpm run build && lefthook install && pnpm run doctor",
+    "doctor": "test -d node_modules && lefthook validate && test -x \"$(git rev-parse --git-path hooks/pre-commit)\" && test -x \"$(git rev-parse --git-path hooks/pre-push)\" || { echo 'Setup incomplete; run pnpm run setup' >&2; exit 1; }",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "eslint --max-warnings 0 .",
+    "build": "pnpm -r --filter \"./packages/*\" --if-present build",
+    "check-package": "pnpm -r --filter \"./packages/*\" --if-present check-package",
+    "type-check": "pnpm -r --if-present type-check",
+    "check-all": "pnpm run format:check && pnpm run lint && pnpm run check-package && pnpm run type-check",
+    "test": "pnpm -r --if-present test"
+  },
+  "devDependencies": {
+    "@arethetypeswrong/cli": "0.18.5",
+    "@eslint/js": "10.0.1",
+    "eslint": "10.13.0",
+    "eslint-config-prettier": "10.1.8",
+    "globals": "17.13.0",
+    "lefthook": "2.2.2",
+    "prettier": "3.9.10",
+    "publint": "0.3.25",
+    "tsdown": "0.23.1",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.71.2",
+    "vitest": "5.0.5"
+  }
+}

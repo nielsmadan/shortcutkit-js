@@ -1,0 +1,8 @@
+.DS_Store
+node_modules/
+dist/
+coverage/
+target/
+.claude/
+spikes/*/results/
+spikes/*/src-tauri/gen/

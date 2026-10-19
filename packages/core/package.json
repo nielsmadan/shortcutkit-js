@@ -1,0 +1,42 @@
+{
+  "name": "@shortcutkit/core",
+  "version": "0.0.0",
+  "description": "User-rebindable keyboard and mouse shortcuts: model, matching, registry, conflicts and persistence.",
+  "keywords": [
+    "shortcuts",
+    "keyboard",
+    "hotkeys",
+    "keybindings",
+    "tauri"
+  ],
+  "homepage": "https://github.com/nielsmadan/shortcutkit-js/tree/main/packages/core#readme",
+  "bugs": "https://github.com/nielsmadan/shortcutkit-js/issues",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nielsmadan/shortcutkit-js.git",
+    "directory": "packages/core"
+  },
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "check-package": "pnpm run build && mkdir -p node_modules/.cache && pnpm pack --out node_modules/.cache/package.tgz && publint --strict node_modules/.cache/package.tgz && attw --profile esm-only node_modules/.cache/package.tgz && node scripts/check-example.mjs node_modules/.cache/package.tgz",
+    "prepublishOnly": "pnpm run type-check && pnpm run test && pnpm run check-package",
+    "type-check": "tsc --noEmit",
+    "test": "vitest run"
+  }
+}
