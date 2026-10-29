@@ -206,6 +206,19 @@ importers:
         specifier: 5.0.5
         version: 5.0.5(@types/node@26.6.5)(happy-dom@21.0.3)(vite@8.3.4(@types/node@26.6.5))
 
+  examples/playground:
+    dependencies:
+      '@shortcutkit/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@shortcutkit/dom':
+        specifier: workspace:*
+        version: link:../../packages/dom
+    devDependencies:
+      vite:
+        specifier: 8.3.4
+        version: 8.3.4(@types/node@26.6.5)
+
   packages/core: {}
 
   packages/dom:

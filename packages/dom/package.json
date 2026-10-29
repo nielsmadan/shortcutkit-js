@@ -34,6 +34,7 @@
   },
   "scripts": {
     "build": "tsdown",
+    "dev": "tsdown --watch --no-clean",
     "check-package": "pnpm run build && mkdir -p node_modules/.cache && pnpm pack --out node_modules/.cache/package.tgz && publint --strict node_modules/.cache/package.tgz && attw --profile esm-only node_modules/.cache/package.tgz && node scripts/check-example.mjs node_modules/.cache/package.tgz",
     "prepublishOnly": "pnpm run type-check && pnpm run test && pnpm run check-package",
     "type-check": "tsc --noEmit",

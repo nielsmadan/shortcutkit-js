@@ -9,6 +9,7 @@
   "scripts": {
     "setup": "pnpm install --frozen-lockfile && pnpm run build && lefthook install && pnpm run doctor",
     "doctor": "test -d node_modules && lefthook validate && test -x \"$(git rev-parse --git-path hooks/pre-commit)\" && test -x \"$(git rev-parse --git-path hooks/pre-push)\" || { echo 'Setup incomplete; run pnpm run setup' >&2; exit 1; }",
+    "dev": "pnpm run build && pnpm -r --parallel --filter \"./packages/*\" --filter \"./examples/*\" --if-present dev",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "eslint --max-warnings 0 .",

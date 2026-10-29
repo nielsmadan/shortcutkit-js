@@ -1,0 +1,16 @@
+{
+  "name": "@shortcutkit/example-playground",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@shortcutkit/core": "workspace:*",
+    "@shortcutkit/dom": "workspace:*"
+  },
+  "devDependencies": {
+    "vite": "8.3.4"
+  }
+}

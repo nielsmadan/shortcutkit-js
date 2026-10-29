@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ShortcutKit Playground</title>
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <header>
+      <h1>ShortcutKit playground</h1>
+      <dl aria-label="Status">
+        <dt>Platform</dt>
+        <dd id="platform"></dd>
+        <dt>Override</dt>
+        <dd>
+          <select id="platform-override" aria-label="Platform override">
+            <option value="">(detect)</option>
+            <option value="mac">mac</option>
+            <option value="windows">windows</option>
+            <option value="linux">linux</option>
+            <option value="other">other</option>
+          </select>
+        </dd>
+        <dt>Layout</dt>
+        <dd id="layout-source"></dd>
+        <dt>Active</dt>
+        <dd id="active-contexts"></dd>
+      </dl>
+    </header>
+
+    <main>
+      <section id="list-section" tabindex="0" aria-label="List context">
+        <h2>List (g g, g e, j, k, Mod+Backspace)</h2>
+        <ul id="list-items" aria-label="List items"></ul>
+        <p>Selection: <span id="list-selection"></span></p>
+      </section>
+
+      <section id="editor-section" tabindex="0" aria-label="Editor context">
+        <h2>Editor (Mod+S, p, Escape)</h2>
+        <input id="editor-title" type="text" aria-label="Editor title" placeholder="Title" />
+        <div
+          id="editor-body"
+          contenteditable="true"
+          role="textbox"
+          aria-label="Editor body"
+          aria-multiline="true"
+        ></div>
+        <p id="editor-status" aria-live="polite"></p>
+      </section>
+
+      <section id="mouse-section" aria-label="Mouse">
+        <h2>Mouse</h2>
+        <div id="click-target" tabindex="0" aria-label="Click target">Click here</div>
+        <p>Clicks reaching the target: <span id="click-count">0</span></p>
+        <p>Navigation: <span id="nav-status"></span></p>
+        <p>Mouse action: <span id="mouse-status"></span></p>
+      </section>
+
+      <section id="bindings-section" aria-label="Bindings">
+        <h2>Bindings</h2>
+        <table id="bindings" aria-label="Bindings table">
+          <thead>
+            <tr>
+              <th>Action</th>
+              <th>Shortcuts</th>
+              <th>Grammar</th>
+              <th>Customized</th>
+              <th>Conflicts</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </section>
+
+      <section id="rebind-section" aria-label="Rebinding">
+        <h2>Rebind</h2>
+        <form id="rebind-form" aria-label="Rebind form">
+          <select id="rebind-action" aria-label="Action"></select>
+          <input
+            id="rebind-input"
+            type="text"
+            aria-label="Shortcuts, comma separated"
+            placeholder="mod+j, g g (empty unbinds)"
+          />
+          <button id="rebind-apply" type="submit">Apply</button>
+        </form>
+        <p id="rebind-error" role="alert"></p>
+        <button id="reset-all" type="button">Reset all</button>
+        <button id="reload-store" type="button">Reload from store</button>
+      </section>
+
+      <section id="log-section" aria-label="Log">
+        <h2>Log</h2>
+        <label><input id="debug-toggle" type="checkbox" checked /> Debug events</label>
+        <button id="clear-log" type="button">Clear</button>
+        <ol id="log" aria-label="Event log"></ol>
+      </section>
+
+      <section id="persistence-section" aria-label="Persistence">
+        <h2>Persistence</h2>
+        <p>Save status: <span id="save-status"></span></p>
+        <pre id="stored-state" aria-label="Stored state"></pre>
+      </section>
+    </main>
+
+    <div id="palette" class="overlay" role="dialog" aria-label="Command palette" hidden>
+      Command palette (Mod+K to close)
+    </div>
+    <div id="help" class="overlay" role="dialog" aria-label="Help" hidden>Help (? to close)</div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
