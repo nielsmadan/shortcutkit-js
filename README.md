@@ -7,10 +7,18 @@ A port of the Swift packages [ShortcutKit](https://github.com/nielsmadan/Shortcu
 [ShortcutField](https://github.com/nielsmadan/ShortcutField). Pre-alpha: nothing is published yet.
 See [`docs/plan.md`](docs/plan.md).
 
+## Packages
+
+- [`@shortcutkit/core`](packages/core): the framework-neutral registry, grammar, matcher, conflicts
+  and persistence.
+- [`@shortcutkit/dom`](packages/dom): browser keyboard and mouse input, text-input and IME gating,
+  keyboard layout and a localStorage store with tab sync.
+
 ## Development
 
 ```bash
 pnpm run setup
+pnpm dev          # build, watch the packages and serve the playground at http://127.0.0.1:43171/
 pnpm run check-all
 pnpm test
 ```
