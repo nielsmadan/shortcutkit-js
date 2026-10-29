@@ -7,6 +7,7 @@ export * from './keys';
 export * from './matcher';
 export * from './migrations';
 export {
+  consoleLogger,
   createRegistry,
   memoryStore,
   type ActionFiredEvent,
@@ -26,3 +27,4 @@ export {
 export { type DebugOutcome, type ShortcutDebugEvent } from './router';
 export * from './shortcut';
 export * from './state';
+export * from './sync';

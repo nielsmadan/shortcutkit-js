@@ -1,0 +1,48 @@
+{
+  "name": "@shortcutkit/dom",
+  "version": "0.0.0",
+  "description": "Browser keyboard and mouse input, text-input and IME gating, keyboard layout and localStorage persistence for @shortcutkit/core.",
+  "keywords": [
+    "shortcuts",
+    "keyboard",
+    "hotkeys",
+    "keybindings",
+    "dom"
+  ],
+  "homepage": "https://github.com/nielsmadan/shortcutkit-js/tree/main/packages/dom#readme",
+  "bugs": "https://github.com/nielsmadan/shortcutkit-js/issues",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nielsmadan/shortcutkit-js.git",
+    "directory": "packages/dom"
+  },
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "check-package": "pnpm run build && mkdir -p node_modules/.cache && pnpm pack --out node_modules/.cache/package.tgz && publint --strict node_modules/.cache/package.tgz && attw --profile esm-only node_modules/.cache/package.tgz && node scripts/check-example.mjs node_modules/.cache/package.tgz",
+    "prepublishOnly": "pnpm run type-check && pnpm run test && pnpm run check-package",
+    "type-check": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "peerDependencies": {
+    "@shortcutkit/core": "workspace:^"
+  },
+  "devDependencies": {
+    "@shortcutkit/core": "workspace:*"
+  }
+}

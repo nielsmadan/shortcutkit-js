@@ -15,8 +15,8 @@ export type ShortcutInput =
       readonly modifiers: Modifiers;
     };
 
-// `advanced` and `fired` both mean the input belongs to a shortcut and should be
-// consumed (`preventDefault`); `ignored` leaves it to the page.
+// `advanced` and `fired` both mean the input belongs to a shortcut and the caller
+// should consume it; `ignored` leaves it to the page.
 export type MatchResult = 'ignored' | 'advanced' | 'fired';
 
 export const DEFAULT_STEP_TIMEOUT_MS = 1000;

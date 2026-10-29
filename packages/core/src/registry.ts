@@ -130,7 +130,7 @@ export function memoryStore(initial?: unknown): ShortcutStore & { readonly curre
   };
 }
 
-const consoleLogger: Logger = {
+export const consoleLogger: Logger = {
   warn: (message) => console.warn(`[shortcutkit] ${message}`),
   error: (message) => console.error(`[shortcutkit] ${message}`),
 };

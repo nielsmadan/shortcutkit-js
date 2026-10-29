@@ -174,6 +174,25 @@ describe('debug events', () => {
     const activationId = registry.getSnapshot().activations[0]?.activationId;
     expect(lines).toEqual([`editor ${activationId}`, '⌘S → save at depth 0']);
   });
+
+  it.each([
+    ['KeyS', ['meta'], 'fired'],
+    ['KeyX', [], 'ignored'],
+  ] as const)(
+    'a throwing listener leaves %s %j %s, the next listener runs, and the error surfaces later',
+    (code, mods, expected) => {
+      const registry = make();
+      registry.activate(editor, () => {});
+      registry.onDebugEvent(() => {
+        throw new Error('listener');
+      });
+      const next = vi.fn();
+      registry.onDebugEvent(next);
+      expect(registry.handleInput(key(code, [...mods]))).toBe(expected);
+      expect(next).toHaveBeenCalledTimes(1);
+      expect(() => vi.runAllTimers()).toThrow('listener');
+    },
+  );
 });
 
 describe('activation snapshot', () => {

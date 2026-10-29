@@ -13,6 +13,14 @@ export class Emitter<T> {
   }
 
   emit(value: T): void {
-    this.listeners.forEach((listener) => listener(value));
+    this.listeners.forEach((listener) => {
+      try {
+        listener(value);
+      } catch (error) {
+        setTimeout(() => {
+          throw error;
+        }, 0);
+      }
+    });
   }
 }
