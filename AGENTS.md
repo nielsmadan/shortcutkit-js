@@ -70,10 +70,30 @@ The input spike: `pnpm --filter @shortcutkit/spike-tauri-input tauri dev`, see i
   injectable through options, and warns through core's `Logger`.
 - Consuming an input means `preventDefault` plus `stopPropagation`; already-prevented events are
   skipped, and a consumed press's follow-up mouse events are consumed too. See "DOM input" in
+  `docs/plan.md`. The press rule lives in `packages/dom/src/press.ts`, shared by `attachInput`,
+  the recorder and its post-session guard; change it there.
+- The recorder's rules and the React adapter's contract are in "Recorder" and "React adapter" in
+  `docs/plan.md`. The React peer range is `^18.0.0 || ^19.0.0`: no React-19-only APIs.
+- Third-party code: TanStack Hotkeys (MIT) is read, not depended on. Copy code only where it is
+  full of gotchas; such a file starts with
+  `// Portions adapted from TanStack Hotkeys (MIT); see THIRD_PARTY_NOTICES.md` and gets a row in
+  its package's `THIRD_PARTY_NOTICES.md` (in the package's `files`). See "Third-party code" in
   `docs/plan.md`.
 - Stores that see other windows' writes implement `onExternalChange`, and `syncRegistry` applies
   them. A store reports the value it holds now, unless its events are guaranteed to arrive in
   write order.
+
+## Test gotchas
+
+- happy-dom does not activate a `<button>` on Enter or Space and does not focus on `mousedown`:
+  call `.focus()` explicitly and leave native activation to browser QA.
+- happy-dom's `getModifierState('AltGraph')` returns `altKey`; stub it per event in AltGr tests.
+- Testing Library advances Vitest fake timers only when a global `jest` exists, so stub one
+  (`vi.stubGlobal('jest', { advanceTimersByTime: … })`) and set up user-event with
+  `advanceTimers: vi.advanceTimersByTime`; otherwise `waitFor`, `findBy*` and user-event hang.
+- React's `act` needs `IS_REACT_ACT_ENVIRONMENT = true`, set in `packages/react/vitest.setup.ts`.
+- A recorder's post-session guard outlives the recorder and test cleanup; end it with
+  `window.dispatchEvent(new Event('blur'))` in `afterEach`, as the dom and react suites do.
 
 ## Commit messages
 

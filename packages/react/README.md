@@ -65,7 +65,7 @@ function Editor() {
 }
 ```
 
-`useFocusShortcutContext(context, handler)` activates `context` while focus is inside an element. Spread its result onto that element: focus moving between its descendants keeps the context active, and focus leaving it, or unmounting, deactivates it.
+`useFocusShortcutContext(context, handler)` activates `context` while focus is inside an element. Spread its result onto that element: focus moving between its descendants keeps the context active, and focus leaving it, or unmounting, deactivates it. Removing the focused descendant from the DOM sends focus to `<body>` without a blur, so the context stays active until focus enters the element and leaves it again; move focus elsewhere before removing a focused child, such as a delete button that removes its own row.
 
 ```tsx
 function List() {

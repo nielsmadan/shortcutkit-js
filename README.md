@@ -11,10 +11,10 @@ See [`docs/plan.md`](docs/plan.md).
 
 - [`@shortcutkit/core`](packages/core): the framework-neutral registry, grammar, matcher, conflicts
   and persistence.
-- [`@shortcutkit/dom`](packages/dom): browser keyboard and mouse input, text-input and IME gating,
-  keyboard layout and a localStorage store with tab sync.
-- [`@shortcutkit/react`](packages/react): `ShortcutKitProvider` and hooks for the registry, key
-  bindings, labels and context activation.
+- [`@shortcutkit/dom`](packages/dom): browser keyboard and mouse input, a shortcut recorder,
+  text-input and IME gating, keyboard layout and a localStorage store with tab sync.
+- [`@shortcutkit/react`](packages/react): `ShortcutKitProvider`, hooks for the registry, key
+  bindings, labels and context activation, and a `<ShortcutRecorder>` field.
 
 ## Development
 
@@ -27,4 +27,6 @@ pnpm test
 
 ## License
 
-MIT
+MIT. Parts of `@shortcutkit/dom` are adapted from
+[TanStack Hotkeys](https://github.com/TanStack/hotkeys) (MIT); see
+[`packages/dom/THIRD_PARTY_NOTICES.md`](packages/dom/THIRD_PARTY_NOTICES.md).
