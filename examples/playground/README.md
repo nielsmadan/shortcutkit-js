@@ -6,7 +6,7 @@ A browser page that exercises `@shortcutkit/core` and `@shortcutkit/dom`: keyboa
 pnpm dev
 ```
 
-Run it from the repository root, then open <http://127.0.0.1:43171/>. It builds both packages once and then watches them, so edits under `packages/*/src` reload the page.
+Run it from the repository root, then open <http://127.0.0.1:43171/>. It builds the packages once and then watches them, so edits under `packages/*/src` reload the page.
 
 ## Platform override
 

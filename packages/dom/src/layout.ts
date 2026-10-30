@@ -1,5 +1,5 @@
 import { consoleLogger, usLayout, type KeyboardLayout, type Logger } from '@shortcutkit/core';
-import { rethrowAsync } from './rethrow';
+import { createSubscribers } from './subscribers';
 
 export interface KeyboardLayoutProvider {
   readonly subscribe: (listener: () => void) => () => void;
@@ -38,7 +38,6 @@ export function keyboardLayoutProvider(
   const logger = options.logger ?? consoleLogger;
   let current: ReadonlyMap<string, string> | undefined;
   let snapshot: KeyboardLayout = usLayout;
-  const listeners = new Set<() => void>();
   let latest = 0;
   let warned = false;
 
@@ -58,23 +57,15 @@ export function keyboardLayoutProvider(
     if (sameMap(map, current)) return;
     current = map;
     snapshot = map === undefined ? usLayout : (code) => map.get(code);
-    for (const listener of [...listeners]) {
-      try {
-        listener();
-      } catch (error) {
-        rethrowAsync(error);
-      }
-    }
+    subscribers.notify();
   };
 
   const getSnapshot = (): KeyboardLayout => snapshot;
 
   let stopFocus: (() => void) | undefined;
 
-  const subscribe = (listener: () => void): (() => void) => {
-    const first = listeners.size === 0;
-    listeners.add(listener);
-    if (first) {
+  const subscribers = createSubscribers({
+    onFirst: () => {
       const target = options.target ?? window;
       const onFocus = () => {
         void refresh();
@@ -82,13 +73,12 @@ export function keyboardLayoutProvider(
       target.addEventListener('focus', onFocus);
       stopFocus = () => target.removeEventListener('focus', onFocus);
       void refresh();
-    }
-    return () => {
-      if (!listeners.delete(listener) || listeners.size > 0) return;
+    },
+    onLast: () => {
       stopFocus?.();
       stopFocus = undefined;
-    };
-  };
+    },
+  });
 
-  return { subscribe, getSnapshot, refresh };
+  return { subscribe: subscribers.subscribe, getSnapshot, refresh };
 }

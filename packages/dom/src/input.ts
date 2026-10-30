@@ -1,9 +1,6 @@
-import {
-  isModifierKeyCode,
-  type Modifiers,
-  type ShortcutInput,
-  type ShortcutRegistry,
-} from '@shortcutkit/core';
+import { type Modifiers, type ShortcutInput, type ShortcutRegistry } from '@shortcutkit/core';
+import { listenAll } from './listeners';
+import { createPressArm, pressListeners } from './press';
 import { rethrowAsync } from './rethrow';
 import { composedTarget, isEditingText } from './text-input';
 
@@ -12,9 +9,7 @@ export interface AttachInputOptions {
   readonly stopPropagation?: boolean | undefined;
 }
 
-const PRESS_FOLLOW_UP_EVENTS = ['mouseup', 'click', 'auxclick', 'dblclick', 'contextmenu'] as const;
-
-function eventModifiers(event: KeyboardEvent | MouseEvent): Modifiers {
+export function eventModifiers(event: KeyboardEvent | MouseEvent): Modifiers {
   return { ctrl: event.ctrlKey, alt: event.altKey, shift: event.shiftKey, meta: event.metaKey };
 }
 
@@ -42,7 +37,7 @@ export function attachInput(
 ): () => void {
   const target = options.target ?? window;
   const stopPropagation = options.stopPropagation ?? true;
-  let pressArmed = false;
+  const press = createPressArm();
 
   const consume = (event: Event) => {
     event.preventDefault();
@@ -64,40 +59,18 @@ export function attachInput(
   };
 
   const onKeyDown = (event: Event) => {
-    const keyEvent = event as KeyboardEvent;
-    if (!keyEvent.repeat && !isModifierKeyCode(keyEvent.code)) pressArmed = false;
     if (event.defaultPrevented) return;
-    const input = keyboardInput(keyEvent);
+    const input = keyboardInput(event as KeyboardEvent);
     if (input) route(event, input);
   };
 
   const onMouseDown = (event: Event) => {
-    pressArmed = false;
     if (event.defaultPrevented) return;
     const input = mouseInput(event as MouseEvent);
-    if (input && route(event, input)) pressArmed = true;
+    if (input && route(event, input)) press.arm();
   };
 
-  const onPointerDown = () => {
-    pressArmed = false;
-  };
-
-  const onFollowUp = (event: Event) => {
-    if (pressArmed) consume(event);
-  };
-
-  const listeners: readonly (readonly [string, (event: Event) => void])[] = [
-    ['keydown', onKeyDown],
-    ['pointerdown', onPointerDown],
-    ['mousedown', onMouseDown],
-    ...PRESS_FOLLOW_UP_EVENTS.map((type) => [type, onFollowUp] as const),
-  ];
-  listeners.forEach(([type, listener]) =>
-    target.addEventListener(type, listener, { capture: true }),
+  return listenAll(
+    pressListeners(target, press, consume, { keydown: onKeyDown, mousedown: onMouseDown }),
   );
-  return () => {
-    listeners.forEach(([type, listener]) =>
-      target.removeEventListener(type, listener, { capture: true }),
-    );
-  };
 }

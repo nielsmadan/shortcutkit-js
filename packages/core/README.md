@@ -5,8 +5,9 @@ persistence with migrations and hint preferences. Pre-alpha; the API will change
 
 `core` uses no DOM or Node APIs; it needs only `setTimeout`, `clearTimeout` and `console` from its
 environment. Hosts feed it key and mouse inputs and supply a store. `@shortcutkit/dom` provides
-browser input, keyboard layout lookup and a localStorage store; the React and Tauri packages are
-planned in [shortcutkit-js](https://github.com/nielsmadan/shortcutkit-js).
+browser input, keyboard layout lookup and a localStorage store, and `@shortcutkit/react` provides
+React hooks; a Tauri package is planned in
+[shortcutkit-js](https://github.com/nielsmadan/shortcutkit-js).
 
 ```bash
 pnpm add @shortcutkit/core
@@ -37,6 +38,17 @@ registry.handleInput({ type: 'key', code: 'KeyS', modifiers: modifiers(['meta'])
 
 `handleInput` returns `'fired'`, `'advanced'` or `'ignored'`; consume the event unless it is
 `'ignored'`.
+
+`registry.suspend()` pauses matching, for example while a shortcut is being recorded: `handleInput`
+returns `'ignored'` until the returned release function is called, and sequences in progress are
+reset. Pass a filter to ignore only the inputs for which it returns `true`; a filtered suspension
+resets nothing. `dispatch` is unaffected. `registry.isSuspended` is `true` while an unfiltered
+suspension is held. `onDebugEvent` listeners receive each ignored input with the outcome `{ type: 'suspended' }`.
+`registry.stepTimeoutMs` is the time allowed between the steps of a sequence.
+
+`unsupportedInScope(shortcut, scope)` returns why a shortcut cannot be bound in a context of that
+scope (`'multiStepInGlobal'` or `'mouseInGlobal'`), or `undefined`; `describeUnsupported(reason)`
+returns an English message for it.
 
 Stores that see writes from other windows implement `SyncedShortcutStore.onExternalChange`,
 reporting the store's current value as `load()` would resolve it.

@@ -16,11 +16,13 @@ Status: pre-alpha. The plan, the decisions behind it and the open questions are 
 
 ## Layout
 
-- `packages/`: `@shortcutkit/*` packages, each built by its own `tsdown.config.ts`. `core` has
-  Vitest suites ported from the Swift tests; `dom`'s suites run under happy-dom (each test file
-  starts with `// @vitest-environment happy-dom`). Planned: `react`, `tauri`, plus the Rust crate
+- `packages/`: `@shortcutkit/*` packages, each built by its own `tsdown.config.ts`: `core`,
+  `dom` and `react`. `core` has Vitest suites ported from the Swift tests; `dom`'s and `react`'s
+  suites run under happy-dom (each test file starts with `// @vitest-environment happy-dom`), and
+  `react`'s render inside `<StrictMode>`. Planned: `tauri`, plus the Rust crate
   `tauri-plugin-shortcutkit`. Shared tooling is a root devDependency.
-- `examples/`: the plain-web playground (`examples/playground`), served by `pnpm dev`.
+- `examples/`: the plain-web playground (`examples/playground`, :43171) and its React twin
+  (`examples/react-playground`, :43172), both served by `pnpm dev`.
 - `spikes/`: throwaway experiments that answer a design question. Record each spike's findings in
   `docs/` before deleting it.
 
@@ -30,7 +32,7 @@ pnpm workspace; Node 24+.
 
 ```bash
 pnpm run setup          # install locked dependencies, build, install Git hooks, run doctor
-pnpm dev                # build, then watch the packages and serve the playground on :43171
+pnpm dev                # build, then watch the packages and serve the playgrounds on :43171 and :43172
 pnpm run doctor         # verify dependencies and hook installation
 pnpm run build          # bundle every package with tsdown into its dist/
 pnpm run check-package  # build, pack, publint, attw, then type-check and run the README example
@@ -41,7 +43,7 @@ pnpm run format         # format with Prettier
 
 Packages resolve each other through `dist/`, so rebuild after changing a package another one
 imports: `type-check` and `test` run on their own read the last build (`check-all` builds first).
-Publish with `pnpm --filter @shortcutkit/<name> publish`, core and dom at the same version;
+Publish with `pnpm --filter @shortcutkit/<name> publish`, core, dom and react at the same version;
 `prepublishOnly` runs type-check, tests and `check-package`. A bare `pnpm pack` does not build.
 
 The input spike: `pnpm --filter @shortcutkit/spike-tauri-input tauri dev`, see its README.

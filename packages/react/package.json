@@ -1,0 +1,59 @@
+{
+  "name": "@shortcutkit/react",
+  "version": "0.0.0",
+  "description": "React provider and hooks for @shortcutkit/core: registry snapshots, shortcut labels, context activation and a shortcut recorder.",
+  "keywords": [
+    "shortcuts",
+    "keyboard",
+    "hotkeys",
+    "keybindings",
+    "react"
+  ],
+  "homepage": "https://github.com/nielsmadan/shortcutkit-js/tree/main/packages/react#readme",
+  "bugs": "https://github.com/nielsmadan/shortcutkit-js/issues",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nielsmadan/shortcutkit-js.git",
+    "directory": "packages/react"
+  },
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "dev": "tsdown --watch --no-clean",
+    "check-package": "pnpm run build && mkdir -p node_modules/.cache && pnpm pack --out node_modules/.cache/package.tgz && publint --strict node_modules/.cache/package.tgz && attw --profile esm-only node_modules/.cache/package.tgz && node scripts/check-example.mjs node_modules/.cache/package.tgz",
+    "prepublishOnly": "pnpm run type-check && pnpm run test && pnpm run check-package",
+    "type-check": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "peerDependencies": {
+    "@shortcutkit/core": "workspace:^",
+    "@shortcutkit/dom": "workspace:^",
+    "react": "^18.0.0 || ^19.0.0"
+  },
+  "devDependencies": {
+    "@shortcutkit/core": "workspace:*",
+    "@shortcutkit/dom": "workspace:*",
+    "@testing-library/dom": "10.4.2",
+    "@testing-library/react": "16.3.3",
+    "@testing-library/user-event": "14.6.8",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
+  }
+}

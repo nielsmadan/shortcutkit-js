@@ -159,14 +159,28 @@ function detectUnsupportedInScope(
   return occurrences
     .filter((o) => scopes.get(o.contextId) === 'global')
     .flatMap((occurrence): Conflict[] => {
-      if (occurrence.shortcut.steps.length > 1) {
-        return [{ type: 'unsupportedInScope', occurrence, reason: 'multiStepInGlobal' }];
-      }
-      if (occurrence.shortcut.steps.some((step) => step.input.type === 'mouse')) {
-        return [{ type: 'unsupportedInScope', occurrence, reason: 'mouseInGlobal' }];
-      }
-      return [];
+      const reason = unsupportedInScope(occurrence.shortcut, 'global');
+      return reason ? [{ type: 'unsupportedInScope', occurrence, reason }] : [];
     });
+}
+
+export function unsupportedInScope(
+  shortcut: Shortcut,
+  scope: ContextScope,
+): UnsupportedReason | undefined {
+  if (scope !== 'global') return undefined;
+  if (shortcut.steps.length > 1) return 'multiStepInGlobal';
+  if (shortcut.steps.some((step) => step.input.type === 'mouse')) return 'mouseInGlobal';
+  return undefined;
+}
+
+export function describeUnsupported(reason: UnsupportedReason): string {
+  switch (reason) {
+    case 'multiStepInGlobal':
+      return "Global shortcuts can't have more than one step";
+    case 'mouseInGlobal':
+      return "Global shortcuts can't use mouse buttons";
+  }
 }
 
 // Matching is by physical key, so these bindings work for whoever recorded them and

@@ -1,7 +1,7 @@
 {
   "name": "@shortcutkit/dom",
   "version": "0.0.0",
-  "description": "Browser keyboard and mouse input, text-input and IME gating, keyboard layout and localStorage persistence for @shortcutkit/core.",
+  "description": "Browser keyboard and mouse input, a shortcut recorder, text-input and IME gating, keyboard layout and localStorage persistence for @shortcutkit/core.",
   "keywords": [
     "shortcuts",
     "keyboard",
@@ -27,7 +27,8 @@
   },
   "files": [
     "dist",
-    "src"
+    "src",
+    "THIRD_PARTY_NOTICES.md"
   ],
   "publishConfig": {
     "access": "public"

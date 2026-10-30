@@ -9,7 +9,9 @@ export type DebugOutcome =
   // Matched, but the action opted out of key repeat; the input is still consumed.
   | { readonly type: 'suppressedKeyRepeat'; readonly action: ActionRef }
   // Also covers keystrokes surrendered to a focused text field.
-  | { readonly type: 'noMatch' };
+  | { readonly type: 'noMatch' }
+  // Ignored while a `suspend()` that covers the input is held.
+  | { readonly type: 'suspended' };
 
 export interface ShortcutDebugEvent {
   readonly pressed: Step;

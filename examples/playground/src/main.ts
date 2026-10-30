@@ -93,7 +93,9 @@ registry.onDebugEvent((event) => {
   if (!debugToggle.checked) return;
   const { outcome } = event;
   const target =
-    outcome.type === 'noMatch' ? '' : ` [${outcome.action.contextId}.${outcome.action.actionId}]`;
+    outcome.type === 'noMatch' || outcome.type === 'suspended'
+      ? ''
+      : ` [${outcome.action.contextId}.${outcome.action.actionId}]`;
   write(
     'debug',
     `debug ${stepLabel(event.pressed, { platform, layout: layout.getSnapshot() })} → ${outcome.type}${target}`,

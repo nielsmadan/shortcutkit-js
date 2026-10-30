@@ -13,7 +13,12 @@ import { Emitter } from './emitter';
 import { formatShortcut, parseShortcut } from './grammar';
 import type { KeyBindingEntry, KeyBindings } from './key-bindings';
 import { isModifierKeyCode } from './keys';
-import { DEFAULT_STEP_TIMEOUT_MS, type MatchResult, type ShortcutInput } from './matcher';
+import {
+  DEFAULT_STEP_TIMEOUT_MS,
+  type MatchResult,
+  type ShortcutInput,
+  stepFromInput,
+} from './matcher';
 import { type ShortcutMigration, applyMigrations, applyMigrationsBestEffort } from './migrations';
 import { ContextMatcher, type ShortcutDebugEvent, routeInput } from './router';
 import type { Platform, Shortcut } from './shortcut';
@@ -30,6 +35,14 @@ import {
   sameRawState,
   setOverride,
 } from './state';
+
+interface Suspension {
+  readonly filter: ((input: ShortcutInput) => boolean) | undefined;
+}
+
+function blocks(suspension: Suspension, input: ShortcutInput): boolean {
+  return suspension.filter === undefined || suspension.filter(input);
+}
 
 export interface ShortcutStore {
   // Resolves to the persisted JSON value, or undefined when nothing is stored yet.
@@ -151,7 +164,7 @@ export class ShortcutRegistry {
   private readonly migrations: readonly ShortcutMigration[];
   private readonly mutex: readonly (readonly string[])[];
   private readonly systemShortcuts: () => readonly Shortcut[];
-  private readonly stepTimeoutMs: number;
+  readonly stepTimeoutMs: number;
   private readonly saveDebounceMs: number;
   private readonly logger: Logger;
   private readonly contextsById: ReadonlyMap<string, ShortcutContext>;
@@ -167,6 +180,7 @@ export class ShortcutRegistry {
   private readonly warnedBindings = new Set<string>();
   private snapshot: RegistrySnapshot;
   private activations: readonly Activation[] = [];
+  private suspensions: readonly Suspension[] = [];
   private readonly globalHandlers = new Map<string, ActionHandler<string>>();
   private nextActivationId = 1;
 
@@ -401,7 +415,29 @@ export class ShortcutRegistry {
     const onDebug = this.debugEmitter.hasListeners
       ? (event: ShortcutDebugEvent) => this.debugEmitter.emit(event)
       : undefined;
+    if (this.suspensions.some((s) => blocks(s, input))) {
+      onDebug?.({ pressed: stepFromInput(input), outcome: { type: 'suspended' } });
+      return 'ignored';
+    }
     return routeInput(this.activations, input, onDebug);
+  }
+
+  // While an unfiltered suspension is held every input is ignored, and taking the first one
+  // resets in-progress sequences; a filtered one ignores only the inputs its filter returns true
+  // for. Returns an idempotent release.
+  suspend(filter?: ((input: ShortcutInput) => boolean) | undefined): () => void {
+    const entry: Suspension = { filter };
+    if (filter === undefined && !this.isSuspended) {
+      this.activations.forEach((a) => a.matcher.reset());
+    }
+    this.suspensions = [...this.suspensions, entry];
+    return () => {
+      this.suspensions = this.suspensions.filter((s) => s !== entry);
+    };
+  }
+
+  get isSuspended(): boolean {
+    return this.suspensions.some((s) => s.filter === undefined);
   }
 
   // Runs the action's handler as if its shortcut fired, and reports it as programmatic.
