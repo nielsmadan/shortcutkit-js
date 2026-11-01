@@ -45,6 +45,7 @@ reset. Pass a filter to ignore only the inputs for which it returns `true`; a fi
 resets nothing. `dispatch` is unaffected. `registry.isSuspended` is `true` while an unfiltered
 suspension is held. `onDebugEvent` listeners receive each ignored input with the outcome `{ type: 'suspended' }`.
 `registry.stepTimeoutMs` is the time allowed between the steps of a sequence.
+`registry.refreshConflicts()` re-reads the `systemShortcuts` option and republishes the snapshot with recomputed conflicts.
 
 `unsupportedInScope(shortcut, scope)` returns why a shortcut cannot be bound in a context of that
 scope (`'multiStepInGlobal'` or `'mouseInGlobal'`), or `undefined`; `describeUnsupported(reason)`

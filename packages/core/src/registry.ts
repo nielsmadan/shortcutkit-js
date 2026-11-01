@@ -656,6 +656,10 @@ export class ShortcutRegistry {
     return result;
   }
 
+  refreshConflicts(): void {
+    this.publish();
+  }
+
   private publish(): void {
     this.snapshot = this.buildSnapshot();
     this.snapshotListeners.emit();

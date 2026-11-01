@@ -292,6 +292,35 @@ describe('registry conflicts', () => {
     ).toEqual(['save']);
   });
 
+  it('republishes conflicts against the current system shortcuts on refreshConflicts', () => {
+    let system: Shortcut[] = [];
+    const reg = registry({ contexts: [sys], systemShortcuts: () => system });
+    const listener = vi.fn();
+    reg.subscribe(listener);
+    expect(ofType(reg.getSnapshot().conflicts, 'systemShared')).toEqual([]);
+    system = [parse('meta+s')];
+    reg.refreshConflicts();
+    expect(listener).toHaveBeenCalledTimes(1);
+    expect(ofType(reg.getSnapshot().conflicts, 'systemShared').map((c) => c.occurrence)).toEqual([
+      occ('editor', 'save', 'meta+s'),
+    ]);
+  });
+
+  it('keeps a sequence in progress across refreshConflicts', () => {
+    const seq = defineContext({
+      id: 'seq',
+      actions: { top: { displayName: 'Top', defaults: 'g g' } },
+    });
+    const reg = registry({ contexts: [seq] });
+    const handler = vi.fn();
+    reg.activate(seq, handler);
+    const g = { type: 'key', code: 'KeyG', modifiers: modifiers([]) } as const;
+    expect(reg.handleInput(g)).toBe('advanced');
+    reg.refreshConflicts();
+    expect(reg.handleInput(g)).toBe('fired');
+    expect(handler).toHaveBeenCalledTimes(1);
+  });
+
   it('reports menu collisions against the effective bindings', () => {
     const reg = registry({ contexts: [sys] });
     const collisions = reg.menuCollisions([
