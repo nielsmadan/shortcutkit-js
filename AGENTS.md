@@ -52,7 +52,9 @@ Publish with `pnpm --filter @shortcutkit/<name> publish`, core, dom, react and t
 version; `prepublishOnly` runs type-check, tests and `check-package`. A bare `pnpm pack` does not
 build. `tauri`'s `check-package` also runs `cargo package -p tauri-plugin-shortcutkit`.
 
-The Tauri example: `pnpm --filter @shortcutkit/example-tauri-app tauri dev`, see its README.
+The Tauri example: `pnpm --filter @shortcutkit/example-tauri-app tauri dev`, see its README. Its
+smoke run, `pnpm --filter @shortcutkit/example-tauri-app smoke`, must pass after any change to
+`packages/tauri` or `examples/tauri-app`; run `pnpm run build` first.
 
 ## Design rules
 
@@ -88,6 +90,10 @@ The Tauri example: `pnpm --filter @shortcutkit/example-tauri-app tauri dev`, see
 - Stores that see other windows' writes implement `onExternalChange`, and `syncRegistry` applies
   them. A store reports the value it holds now, unless its events are guaranteed to arrive in
   write order.
+- Tauri global hotkeys: the coordinator lock is main-thread only and only `on_shortcut` and
+  `unregister` are called; see the threading rule in "Tauri adapter" in `docs/plan.md`.
+- `tauri-plugin-shortcutkit` depends on caret ranges; `Cargo.lock` pins. No `cargo update` beyond
+  releases at least 14 days old.
 
 ## Test gotchas
 
@@ -100,6 +106,12 @@ The Tauri example: `pnpm --filter @shortcutkit/example-tauri-app tauri dev`, see
 - React's `act` needs `IS_REACT_ACT_ENVIRONMENT = true`, set in `packages/react/vitest.setup.ts`.
 - A recorder's post-session guard outlives the recorder and test cleanup; end it with
   `window.dispatchEvent(new Event('blur'))` in `afterEach`, as the dom and react suites do.
+- Tauri JS tests inject a `TauriIpc` fake through the `ipc` option, which controls the order of
+  responses and events; they do not use `@tauri-apps/api/mocks`.
+- Smoke windows need `backgroundThrottling` off: WebKit stops a hidden page's timers after about
+  10 s, so the checks' timeouts would never fire.
+- In a sandboxed session the smoke run logs WebKit's "could not create directory" warnings for
+  `~/Library/WebKit`; they are harmless.
 
 ## Commit messages
 

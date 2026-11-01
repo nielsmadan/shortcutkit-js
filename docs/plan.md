@@ -65,7 +65,7 @@ that sees other windows' writes also implements `onExternalChange` (`SyncedShort
 
 ## Multi-window model
 
-The Rust plugin owns the file: it reads, writes atomically and broadcasts each save to every window.
+The Rust plugin owns the file: it reads, writes atomically and announces each save to every window.
 Each window runs its own registry and matcher. Migrations are declared in JS, so the first registry
 to load migrates and writes back. Edits are saved through the store; each broadcast goes to
 `applyState()`, which ignores it while that window has unsaved edits of its own. Single-window apps
@@ -80,9 +80,13 @@ because a late event carries an outdated value and tabs would otherwise diverge.
 an event's payload only when its events arrive in write order. Last writer wins for the whole
 state.
 
-Open for async stores (step 4): a write from another window that lands while a save is in flight,
-or between `load()` and subscribing, is never reported, so that window stays stale until its next
-save. The Tauri store needs revisions, or a re-read after each save and after subscribing.
+An async store can miss a write from another window that lands while its own save is in flight, or
+between `load()` and subscribing. The Tauri store closes that gap with revisions. Rust serializes
+writes under one lock, bumps an in-memory revision per file and emits a nudge carrying only the file
+and revision, all under that lock. The JS store has a single delivery pump (the pure state machine
+in `guest-js/store-sync.ts`) that re-reads through `load_state` and never reports a state at or
+below the highest revision it loaded, saved or delivered. It defers while its own save is in flight
+and probes once after subscribing. This needed no change to core's store interface.
 
 ## Order
 
@@ -93,7 +97,9 @@ save. The Tauri store needs revisions, or a re-read after each save and after su
    (`examples/playground`, `examples/react-playground`). The recorder pauses matching through
    `registry.suspend()` rather than claiming events first, because a recorder that mounts after
    `attachInput` registers its listeners too late to run before it.
-4. The Rust plugin and an example Tauri app.
+4. The Rust plugin and an example Tauri app. Done: `tauri-plugin-shortcutkit` and
+   `@shortcutkit/tauri` (`packages/tauri`), core's `refreshConflicts()`, and `examples/tauri-app`
+   with its smoke run. See "Tauri adapter".
 5. Settings view, legend and hint display.
 
 ## DOM input
@@ -216,6 +222,54 @@ where Option is a plain Alt. Matching in `attachInput` is unchanged (see "Open" 
   stays active until focus enters the element and leaves it again; detecting the removal needs a
   `MutationObserver` or an `activeElement` check.
 
+## Tauri adapter
+
+`packages/tauri` holds the Rust crate and the npm package; its README documents setup and every
+export. The decisions behind it:
+
+- Own plugin rather than `tauri-plugin-store`, which writes non-atomically and has no revisions.
+- OS registration goes through `tauri-plugin-global-shortcut`'s Rust API (`GlobalShortcutExt`),
+  not the `global-hotkey` crate directly, whose event handler is process-global. The adopter
+  registers both plugins.
+- Threading rule. The three global hotkey commands are synchronous, so they run on the main thread
+  in arrival order. The coordinator lock is taken only on the main thread (those commands,
+  `on_page_load`, `on_event`), so OS calls that hop to the main thread run inline under it. A
+  separate routing lock holds the owner, `paused` and the shortcut-to-binding map; the press
+  handler reads only that lock, which is never held across an OS call. On Linux the press handler
+  runs on global-hotkey's x11 thread, which `register` waits on. Only `on_shortcut` and
+  `unregister` are used, never `register_multiple`, `on_shortcuts` or `unregister_all`: they hold
+  the global-shortcut plugin's lock across a main-thread hop, and `unregister_all` also drops the
+  adopter's own shortcuts.
+- The coordinator (`src/global.rs`) is pure and the OS adapter (`src/global_os.rs`) sits behind a
+  trait, so ownership, pause and retry are tested against a fake.
+- The first attachment owns the hotkeys; on its detach, page load or window destroy the next one in
+  attach order takes over. Every change bumps a monotonic `version` and JS applies only the highest
+  it has seen. Each attachment sends one sync at a time and skips unchanged content.
+- Pause: while any attachment reports recording, every hotkey of ours is unregistered, so every
+  window that renders a recorder must attach. Recording reaches the plugin through dom's
+  `recordingStatus`, because core's `suspend()` does not cover `dispatchGlobal`. The milliseconds
+  between a recording starting and the unregister are accepted.
+- Statuses match a registration result on binding id and key, so a rebound binding stays `pending`
+  until its own result arrives.
+- A bare global hotkey (no ctrl, alt, shift or meta) is allowed only for `F1`–`F24`; the Rust
+  adapter enforces it, core's `unsupportedInScope` does not.
+- Menu sync takes each action's first binding, single-step key shortcuts only and a code allowlist
+  checked against muda's parser; anything else clears the accelerator. Meta gives `undefined` on
+  Windows, because muda's Windows parser rejects it. Tauri clears an unparseable accelerator
+  silently and has no accelerator getter, so menu collisions come from `predefinedMenuShortcuts`
+  plus the adopter's static items.
+- Keyboard layout and system shortcuts are native on macOS only, through hand-written Carbon FFI
+  (`src/macos.rs`) run on the main thread via `run_on_main_thread`. `UCKeyTranslate` gets
+  `kUCKeyTranslateNoDeadKeysMask` (1), not the bit (0) Swift passes. The `kHISymbolicHotKey*`
+  dictionary keys are C macros, not exported symbols, so they are built from string literals.
+- System shortcuts are cached in JS, refreshed on window focus and pushed into the registry with
+  core's `refreshConflicts()`; `systemShortcuts` stays synchronous.
+- WebView2's browser keys are the adopter's job, through `tauri-plugin-prevent-default` in their
+  app (the example shows it); the plugin has no code for them.
+- The library crate depends on caret ranges, so it resolves for apps on other Tauri 2.x patches;
+  the committed `Cargo.lock` pins exact versions, and the example app pins exactly. Lockfile
+  updates take only releases at least 14 days old.
+
 ## Third-party code
 
 TanStack Hotkeys (MIT) is not a dependency. Re-implement what is simple after reading it; copy
@@ -226,15 +280,24 @@ the upstream file it derives from, in that package's `THIRD_PARTY_NOTICES.md`, w
 full MIT text and copyright line and is in the package's `files`. Ideas alone need no notice. In
 `dom`, `recording-guard.ts` and `altgraph.ts` are adapted.
 
+The same rule covers other sources. In `tauri`, `src/keycodes.rs` is the mac column of Chromium's
+`ui/events/keycodes/dom/dom_code_data.inc` (BSD-3-Clause), credited with
+`// Portions adapted from Chromium (BSD-3-Clause); see THIRD_PARTY_NOTICES.md`.
+
 ## Deferred and unverified
 
 - The binding editor row and the settings view (step 5).
 - A one-off `useShortcut` outside the registry, like Swift's `.onShortcut`.
 - Scroll and gesture recording.
-- `suspend()` does not cover `dispatchGlobal` and has no change notification. The Tauri adapter
-  pauses OS-level global hotkeys through dom's `recordingStatus` instead; a host without such an
-  adapter keeps firing them while recording.
 - Swift also pauses global hotkeys while a menu is being tracked; the Tauri adapter does not.
+- Mobile builds: `tauri-plugin-global-shortcut` is desktop-only, so the crate does not build for
+  Android or iOS until that dependency is target-gated.
+- The Tauri adapter has been built and run only on macOS. Its Windows and Linux runtime is
+  unverified, including how GTK displays and triggers a `Super` accelerator.
+- The example's GUI has not been checked interactively; the manual checklist is in
+  `examples/tauri-app/README.md`. No real OS-level hotkey press has been tested.
+- Layout changes have no notification: the layout and system shortcuts refresh on window focus
+  only.
 - No React 18 smoke test has run; the hooks avoid React-19-only APIs, but a React 18 bug would
   surface only in an adopter's app.
 - No WebKit QA of the recorder: click, Enter and Space start, a key committing after the timeout,
@@ -246,8 +309,8 @@ full MIT text and copyright line and is in the package's `files`. Ideas alone ne
 
 Confirmed by the spike's automatic run (macOS 26, Tauri 2.12.4, WKWebView):
 
-- `navigator.keyboard` is absent, so `getLayoutMap()` is unavailable. Layout-aware labels need a
-  native lookup from the plugin (port of the Swift `UCKeyTranslate` code) or a learned map.
+- `navigator.keyboard` is absent, so `getLayoutMap()` is unavailable. The plugin looks the layout
+  up natively instead (see "Tauri adapter").
 - An app menu built from JS with accelerators installs fine.
 - `register('CommandOrControl+Space')` succeeds and `isRegistered` returns true although Spotlight
   owns that shortcut. Registration success does not mean the shortcut will fire, so the

@@ -15,6 +15,8 @@ See [`docs/plan.md`](docs/plan.md).
   text-input and IME gating, keyboard layout and a localStorage store with tab sync.
 - [`@shortcutkit/react`](packages/react): `ShortcutKitProvider`, hooks for the registry, key
   bindings, labels and context activation, and a `<ShortcutRecorder>` field.
+- [`@shortcutkit/tauri` and `tauri-plugin-shortcutkit`](packages/tauri): a state file shared by
+  every window, global hotkeys, menu accelerator sync, keyboard layout and macOS system shortcuts.
 
 ## Development
 
@@ -29,4 +31,6 @@ pnpm test
 
 MIT. Parts of `@shortcutkit/dom` are adapted from
 [TanStack Hotkeys](https://github.com/TanStack/hotkeys) (MIT); see
-[`packages/dom/THIRD_PARTY_NOTICES.md`](packages/dom/THIRD_PARTY_NOTICES.md).
+[`packages/dom/THIRD_PARTY_NOTICES.md`](packages/dom/THIRD_PARTY_NOTICES.md). The key-code table
+in `tauri-plugin-shortcutkit` is adapted from Chromium (BSD-3-Clause); see
+[`packages/tauri/THIRD_PARTY_NOTICES.md`](packages/tauri/THIRD_PARTY_NOTICES.md).
