@@ -1,0 +1,13 @@
+"$schema" = "schemas/schema.json"
+
+[default]
+description = "Allows every ShortcutKit command: the state file, global hotkeys, keyboard layout and system shortcuts."
+permissions = [
+  "allow-load-state",
+  "allow-save-state",
+  "allow-sync-global-hotkeys",
+  "allow-detach-global-hotkeys",
+  "allow-global-hotkeys-state",
+  "allow-keyboard-layout",
+  "allow-system-shortcuts",
+]

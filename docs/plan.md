@@ -86,7 +86,7 @@ save. The Tauri store needs revisions, or a re-read after each save and after su
 
 ## Order
 
-1. Input spike in Tauri (`spikes/tauri-input`).
+1. Input spike in Tauri (deleted once its findings were recorded below).
 2. `core`, with the Swift test suites (minus TOML persistence) ported to Vitest as the spec.
 3. `dom`, React hooks and the recorder, against a plain-web playground with a localStorage store.
    Done: `dom`, the matching pause, the recorder, `@shortcutkit/react` and both playgrounds
@@ -231,8 +231,10 @@ full MIT text and copyright line and is in the package's `files`. Ideas alone ne
 - The binding editor row and the settings view (step 5).
 - A one-off `useShortcut` outside the registry, like Swift's `.onShortcut`.
 - Scroll and gesture recording.
-- `suspend()` does not cover `dispatchGlobal` and has no change notification, so OS-level global
-  hotkeys keep firing while recording. The Tauri adapter (step 4) needs a way to pause them.
+- `suspend()` does not cover `dispatchGlobal` and has no change notification. The Tauri adapter
+  pauses OS-level global hotkeys through dom's `recordingStatus` instead; a host without such an
+  adapter keeps firing them while recording.
+- Swift also pauses global hotkeys while a menu is being tracked; the Tauri adapter does not.
 - No React 18 smoke test has run; the hooks avoid React-19-only APIs, but a React 18 bug would
   surface only in an adopter's app.
 - No WebKit QA of the recorder: click, Enter and Space start, a key committing after the timeout,
@@ -268,14 +270,19 @@ Confirmed by the spike's manual steps on macOS:
   `isComposing: true` and `keyCode: 229`, then `compositionend` with `'é'` and a final `keydown`
   with `key: 'é'`, `keyCode: 229` but `isComposing: false`. The IME gate must check
   `keyCode === 229` as well as `isComposing`. Same shape in input, textarea and contenteditable.
-- Mouse: middle button is `button: 1` (`buttons: 4`) with `mousedown` and `auxclick`; right button
+- Bare function keys work as menu accelerators too: `F6` fired its item right after the page's
+  `keydown`. `F5`, `Escape` and `Ctrl+1` reach the page as ordinary keys; WKWebView has no
+  browser accelerator keys.
+- During dead-key composition the `keyup` for the dead key reports `key: '´'` with
+  `isComposing: true`; the `keyup` after `compositionend` reports `key: 'e'`.
+- Mouse: middle button is `button: 1` (`buttons: 4`) with `mousedown` and `auxclick` (`buttons: 0` on the latter); right button
   is `button: 2` with `contextmenu`.
 - Trackpad pinch fires both WebKit `gesturestart`/`gestureend` (with `scale`, `rotation`) and
   `wheel` events with `ctrlKey`; rotate fires only the gesture events.
 - Juggler's Carbon global hotkeys (⌘⇧K and others) swallow the key before the webview sees it;
   the spike was moved off them.
 
-Still open on macOS:
+Still open on macOS (now manual checks in `examples/tauri-app/README.md`):
 
 - Global shortcuts firing from another app, and whether Spotlight still wins `⌘Space` after
   registering it. Carbon matches modifiers exactly, so a Hyper key press (⌃⌥⇧⌘) does not trigger
@@ -283,9 +290,10 @@ Still open on macOS:
 - Back and forward mouse buttons (`button: 3`/`4`).
 - CJK input methods.
 
-Open on other platforms (the spike runs there too):
+Open on other platforms (now manual checks in `examples/tauri-app/README.md`):
 
 - Windows: WebView2 browser keys (Ctrl+F, Ctrl+P, F5, zoom) are on by default. wry has
   `with_browser_accelerator_keys(false)`; Tauri's config and runtime do not expose it, so it needs
-  `tauri-plugin-prevent-default` or webview settings access.
+  `tauri-plugin-prevent-default` or webview settings access. Resolved by the example (see its
+  README, "Windows"); the manual check remains.
 - Linux: global shortcuts work on X11 only. WebKitGTK also lacks `getLayoutMap`.

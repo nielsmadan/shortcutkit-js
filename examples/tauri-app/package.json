@@ -1,0 +1,27 @@
+{
+  "name": "@shortcutkit/example-tauri-app",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "vite": "vite",
+    "tauri": "tauri",
+    "smoke": "SHORTCUTKIT_EXAMPLE_SMOKE=1 tauri dev --no-watch",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@shortcutkit/core": "workspace:*",
+    "@shortcutkit/dom": "workspace:*",
+    "@shortcutkit/react": "workspace:*",
+    "@shortcutkit/tauri": "workspace:*",
+    "@tauri-apps/api": "2.12.4",
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "2.12.3",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "6.1.2",
+    "vite": "8.3.4"
+  }
+}

@@ -1,0 +1,21 @@
+[package]
+name = "shortcutkit-example-tauri-app"
+version = "0.0.0"
+edition.workspace = true
+publish = false
+
+[lib]
+name = "shortcutkit_example_tauri_app"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "=2.7.3", features = [] }
+
+[dependencies]
+muda = { version = "=0.20.0", default-features = false }
+tauri = { version = "=2.12.4", features = [] }
+tauri-plugin-global-shortcut = "=2.4.1"
+tauri-plugin-shortcutkit = { path = "../../../packages/tauri" }
+
+[target.'cfg(windows)'.dependencies]
+tauri-plugin-prevent-default = { version = "=6.0.1", features = ["platform-windows"] }

@@ -20,7 +20,11 @@ export default [
     },
   },
   {
-    files: ['packages/react/**/*.{ts,tsx}', 'examples/react-playground/**/*.{ts,tsx}'],
+    files: [
+      'packages/react/**/*.{ts,tsx}',
+      'examples/react-playground/**/*.{ts,tsx}',
+      'examples/tauri-app/**/*.{ts,tsx}',
+    ],
     ...reactHooks.configs.flat.recommended,
   },
   {

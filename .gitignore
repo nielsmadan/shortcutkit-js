@@ -6,3 +6,5 @@ target/
 .claude/
 spikes/*/results/
 spikes/*/src-tauri/gen/
+examples/tauri-app/results/
+examples/tauri-app/src-tauri/gen/

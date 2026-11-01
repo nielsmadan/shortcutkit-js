@@ -1,0 +1,57 @@
+{
+  "name": "@shortcutkit/tauri",
+  "version": "0.0.0",
+  "description": "Tauri host for @shortcutkit/core: a state file shared by every window, global hotkeys, menu accelerators, keyboard layout and macOS system shortcuts.",
+  "keywords": [
+    "shortcuts",
+    "keyboard",
+    "hotkeys",
+    "keybindings",
+    "tauri"
+  ],
+  "homepage": "https://github.com/nielsmadan/shortcutkit-js/tree/main/packages/tauri#readme",
+  "bugs": "https://github.com/nielsmadan/shortcutkit-js/issues",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nielsmadan/shortcutkit-js.git",
+    "directory": "packages/tauri"
+  },
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "guest-js",
+    "README.md",
+    "LICENSE",
+    "THIRD_PARTY_NOTICES.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "dev": "tsdown --watch --no-clean",
+    "check-package": "pnpm run build && mkdir -p node_modules/.cache && pnpm pack --out node_modules/.cache/package.tgz && publint --strict node_modules/.cache/package.tgz && attw --profile esm-only node_modules/.cache/package.tgz && cargo package -p tauri-plugin-shortcutkit --allow-dirty",
+    "prepublishOnly": "pnpm run type-check && pnpm run test && pnpm run check-package",
+    "type-check": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^2.12.4"
+  },
+  "peerDependencies": {
+    "@shortcutkit/core": "workspace:^",
+    "@shortcutkit/dom": "workspace:^"
+  },
+  "devDependencies": {
+    "@shortcutkit/core": "workspace:*",
+    "@shortcutkit/dom": "workspace:*"
+  }
+}

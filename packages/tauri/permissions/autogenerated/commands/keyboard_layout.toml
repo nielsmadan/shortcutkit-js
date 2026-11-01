@@ -1,0 +1,13 @@
+# Automatically generated - DO NOT EDIT!
+
+"$schema" = "../../schemas/schema.json"
+
+[[permission]]
+identifier = "allow-keyboard-layout"
+description = "Enables the keyboard_layout command without any pre-configured scope."
+commands.allow = ["keyboard_layout"]
+
+[[permission]]
+identifier = "deny-keyboard-layout"
+description = "Denies the keyboard_layout command without any pre-configured scope."
+commands.deny = ["keyboard_layout"]

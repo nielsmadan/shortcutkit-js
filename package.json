@@ -16,8 +16,8 @@
     "build": "pnpm -r --filter \"./packages/*\" --if-present build",
     "check-package": "pnpm -r --filter \"./packages/*\" --if-present check-package",
     "type-check": "pnpm -r --if-present type-check",
-    "check-all": "pnpm run format:check && pnpm run lint && pnpm run check-package && pnpm run type-check",
-    "test": "pnpm -r --if-present test"
+    "check-all": "pnpm run format:check && pnpm run lint && pnpm run check-package && pnpm run type-check && cargo fmt --all --check && cargo clippy --workspace --all-targets -- -D warnings",
+    "test": "pnpm -r --if-present test && cargo test --workspace"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "0.18.5",
