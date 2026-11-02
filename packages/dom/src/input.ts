@@ -31,6 +31,17 @@ export function mouseInput(event: MouseEvent): ShortcutInput | undefined {
   return { type: 'mouse', button: event.button, modifiers: eventModifiers(event) };
 }
 
+function activatesButton(event: KeyboardEvent): boolean {
+  if (event.code !== 'Enter' && event.code !== 'Space') return false;
+  if (event.ctrlKey || event.altKey || event.shiftKey || event.metaKey) return false;
+  const element = composedTarget(event);
+  if (element?.localName === 'button') return true;
+  return (
+    element?.localName === 'input' &&
+    ['button', 'submit', 'reset'].includes((element as HTMLInputElement).type)
+  );
+}
+
 export function attachInput(
   registry: Pick<ShortcutRegistry, 'handleInput'>,
   options: AttachInputOptions = {},
@@ -60,7 +71,9 @@ export function attachInput(
 
   const onKeyDown = (event: Event) => {
     if (event.defaultPrevented) return;
-    const input = keyboardInput(event as KeyboardEvent);
+    const keyEvent = event as KeyboardEvent;
+    if (activatesButton(keyEvent)) return;
+    const input = keyboardInput(keyEvent);
     if (input) route(event, input);
   };
 

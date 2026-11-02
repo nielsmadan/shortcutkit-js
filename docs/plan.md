@@ -122,6 +122,7 @@ and probes once after subscribing. This needed no change to core's store interfa
   `isContentEditable`, minus readonly and disabled fields, resolved through
   `composedPath()[0]` for open shadow roots. Keydowns with `isComposing` or `keyCode === 229`
   never reach the registry.
+- Bare Enter and Space on native buttons (`button` and button/submit/reset inputs) yield to native activation in `attachInput`; the recorder still captures them.
 - The layout provider calls `navigator.keyboard.getLayoutMap()` as a method (a detached call
   throws in Chromium), refreshes on window focus while subscribed, keeps the last good layout on
   failure and falls back to `usLayout`. No learned map.

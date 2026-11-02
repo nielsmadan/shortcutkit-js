@@ -42,6 +42,8 @@ The rest of a press: after a consumed `mousedown`, the `mouseup`, `click`, `auxc
 
 Text inputs: `textarea`, and `input` of type `text`, `search`, `email`, `url`, `tel`, `password`, `number`, `date`, `time`, `datetime-local`, `month` or `week`, unless read-only or disabled, plus `contenteditable` elements, count as editing text. The target is read through `composedPath()`, so open shadow roots work. The registry receives `editingText` and decides what fires. Key events during IME composition (`isComposing` or `keyCode` 229) are ignored. Mouse buttons 0 to 4 are routed.
 
+Bare Enter and Space on native buttons (`button` and `input` types `button`, `submit`, `reset`) stay with the button for native activation. Modified keys and other shortcuts still route to the registry. Recording continues to capture Enter and Space.
+
 Known gaps:
 
 - Closed shadow roots are not seen into.

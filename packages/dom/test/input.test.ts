@@ -77,6 +77,40 @@ describe('keyboard', () => {
     });
   });
 
+  it.each(['button', 'input:button', 'input:submit', 'input:reset'])(
+    'leaves Enter and Space on %s to native activation',
+    (kind) => {
+      const registry = fakeRegistry();
+      attach(registry);
+      const button = kind === 'button' ? append('button') : append('input');
+      if (button instanceof HTMLInputElement) button.type = kind.slice('input:'.length);
+      const page = vi.fn();
+      listen(button, 'keydown', page);
+      for (const code of ['Enter', 'Space']) {
+        expect(keydown(button, { code }).defaultPrevented).toBe(false);
+      }
+      expect(page).toHaveBeenCalledTimes(2);
+      expect(registry.handleInput).not.toHaveBeenCalled();
+    },
+  );
+
+  it('routes letter shortcuts and modified Enter on a button', () => {
+    const registry = fakeRegistry();
+    attach(registry);
+    const button = append('button');
+    keydown(button, { code: 'KeyE' });
+    keydown(button, { code: 'Enter', metaKey: true });
+    expect(registry.handleInput.mock.calls).toEqual([
+      [expect.objectContaining({ code: 'KeyE' })],
+      [
+        expect.objectContaining({
+          code: 'Enter',
+          modifiers: { ctrl: false, alt: false, shift: false, meta: true },
+        }),
+      ],
+    ]);
+  });
+
   it('marks a keydown in a textarea as editing text', () => {
     const registry = fakeRegistry();
     attach(registry);
